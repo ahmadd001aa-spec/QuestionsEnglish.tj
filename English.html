@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+<title>English Quiz · Саволҳо</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;transition:background-color .2s,border-color .2s,color .2s}
+:root{--bg:#f5f9ff;--surface:#fff;--surface-2:#eef3fc;--text:#1a2639;--text-secondary:#5a6b7c;--border:#d9e2ec;--accent:#2d7aed;--accent-soft:#d9e8ff;--correct:#1e9b6e;--correct-bg:#e2f7ef;--wrong:#d64545;--wrong-bg:#ffe6e6;--shadow:0 10px 30px -10px rgba(0,20,50,.12);--radius:24px;--radius-sm:14px}
+body.dark{--bg:#0d121c;--surface:#19212e;--surface-2:#232e3e;--text:#e8edf5;--text-secondary:#a0b2c6;--border:#2d3b4f;--accent:#5b9aff;--accent-soft:#1e3355;--correct:#34c78b;--correct-bg:#1a3a2e;--wrong:#ff6b6b;--wrong-bg:#3d1e1e;--shadow:0 10px 30px -10px rgba(0,0,0,.6)}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);display:flex;justify-content:center;align-items:flex-start;padding:16px;min-height:100vh;line-height:1.5;-webkit-tap-highlight-color:transparent}
+.app{max-width:760px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.card{background:var(--surface);border-radius:var(--radius);padding:24px 20px;box-shadow:var(--shadow);border:1px solid var(--border);animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+.header h1{font-size:1.6rem;font-weight:700;letter-spacing:-.02em;color:var(--text);display:flex;align-items:center;gap:8px}
+.header h1 span{background:var(--accent);color:#fff;font-size:.75rem;font-weight:600;padding:4px 10px;border-radius:40px}
+.theme-toggle{background:var(--surface-2);border:1px solid var(--border);border-radius:40px;padding:6px 14px;font-size:.9rem;font-weight:500;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.theme-toggle:hover{background:var(--accent-soft);border-color:var(--accent)}
+.stats{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.question-counter{font-size:1.1rem;font-weight:600;color:var(--accent)}
+.score-badge{background:var(--surface-2);padding:6px 16px;border-radius:40px;font-size:.9rem;font-weight:500;color:var(--text-secondary);border:1px solid var(--border)}
+.progress-container{width:100%;height:10px;background:var(--surface-2);border-radius:20px;overflow:hidden;margin-bottom:18px;border:1px solid var(--border)}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#7aa9ff);border-radius:20px;transition:width .3s ease}
+.question-text{font-size:1.3rem;font-weight:600;line-height:1.4;margin-bottom:24px;word-break:break-word;color:var(--text)}
+.options{display:flex;flex-direction:column;gap:12px;margin-bottom:22px}
+.option{background:var(--surface-2);border:2px solid var(--border);border-radius:var(--radius-sm);padding:16px 18px;font-size:1.05rem;font-weight:500;color:var(--text);text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;word-break:break-word;user-select:none}
+.option:hover:not(.disabled){background:var(--accent-soft);border-color:var(--accent)}
+.option .letter{display:inline-flex;align-items:center;justify-content:center;background:var(--surface);border-radius:10px;width:32px;height:32px;font-weight:700;font-size:.95rem;color:var(--text-secondary);border:1px solid var(--border);flex-shrink:0}
+.option.selected .letter{background:var(--accent);color:#fff;border-color:var(--accent)}
+.option.correct{background:var(--correct-bg);border-color:var(--correct)}
+.option.correct .letter{background:var(--correct);color:#fff;border-color:var(--correct)}
+.option.wrong{background:var(--wrong-bg);border-color:var(--wrong)}
+.option.wrong .letter{background:var(--wrong);color:#fff;border-color:var(--wrong)}
+.option.disabled{cursor:default;opacity:.9}
+.btn-group{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:8px}
+.btn{background:var(--surface-2);border:1px solid var(--border);border-radius:40px;padding:12px 22px;font-size:.95rem;font-weight:600;color:var(--text);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:1 0 auto;min-width:100px;user-select:none}
+.btn:hover:not(:disabled){background:var(--accent-soft);border-color:var(--accent)}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:#1f66d0;border-color:#1f66d0}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.result-card{text-align:center;padding:28px 20px}
+.result-card h2{font-size:2rem;font-weight:700;margin-bottom:8px;color:var(--accent)}
+.result-percent{font-size:3.4rem;font-weight:800;line-height:1.1;margin:10px 0 6px;color:var(--text)}
+.result-details{display:flex;justify-content:center;gap:28px;margin:18px 0 22px;flex-wrap:wrap}
+.result-details div{display:flex;flex-direction:column;align-items:center;gap:4px}
+.result-details .value{font-size:1.6rem;font-weight:700}
+.result-details .label{font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-secondary)}
+.correct-value{color:var(--correct)}.wrong-value{color:var(--wrong)}
+.result-message{background:var(--surface-2);border-radius:var(--radius-sm);padding:16px 20px;font-size:1.1rem;font-weight:500;margin:16px 0 20px;border:1px solid var(--border)}
+.hidden{display:none!important}
+.message-box{background:var(--surface-2);border-radius:var(--radius-sm);padding:12px 18px;font-size:1rem;font-weight:500;margin-bottom:16px;border:1px solid var(--border);text-align:center;display:none}
+.message-box.success{background:var(--correct-bg);border-color:var(--correct);color:var(--correct);display:block}
+.message-box.error{background:var(--wrong-bg);border-color:var(--wrong);color:var(--wrong);display:block}
+@media(max-width:600px){body{padding:10px}.card{padding:18px 14px;border-radius:20px}.header h1{font-size:1.3rem}.question-text{font-size:1.1rem;margin-bottom:18px}.option{padding:14px;font-size:.95rem;gap:10px}.option .letter{width:28px;height:28px;font-size:.85rem}.btn{padding:11px 16px;font-size:.9rem;min-width:80px}.result-percent{font-size:2.8rem}.result-details .value{font-size:1.4rem}.theme-toggle{font-size:.8rem;padding:5px 12px}}
+@media(max-width:380px){.btn-group .btn{flex:1 1 100%}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="card" style="padding:16px 20px">
+    <div class="header">
+      <h1>📘 English Quiz <span id="totalBadge">120 савол</span></h1>
+      <button class="theme-toggle" id="themeToggle">🌙 Dark</button>
+    </div>
+  </div>
+
+  <div class="card" id="quizCard">
+    <div class="stats">
+      <div class="question-counter" id="questionCounter">Саволи 1 аз 120</div>
+      <div class="score-badge" id="scoreBadge">0 дуруст</div>
+    </div>
+    <div class="progress-container"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="message-box" id="messageBox"></div>
+    <div class="question-text" id="questionText">Саволи 1</div>
+    <div class="options" id="optionsContainer"></div>
+    <div class="btn-group">
+      <button class="btn" id="btnPrev">⬅️ Қафо</button>
+      <button class="btn" id="btnFinish">🏁 Анҷоми тест</button>
+      <button class="btn" id="btnRestart">🔁 Аз нав оғоз кардан</button>
+    </div>
+  </div>
+
+  <div class="card result-card hidden" id="resultCard">
+    <h2>🏆 Натиҷаи тест</h2>
+    <div class="result-percent" id="resultPercent">0%</div>
+    <div class="result-details">
+      <div><span class="value" id="resultCorrect">0</span><span class="label">Дуруст</span></div>
+      <div><span class="value wrong-value" id="resultWrong">0</span><span class="label">Нодуруст</span></div>
+      <div><span class="value" id="resultTotal">120</span><span class="label">Ҳамагӣ</span></div>
+    </div>
+    <div class="result-message" id="resultMessage">Натиҷа: 0%</div>
+    <button class="btn btn-primary" id="btnRestartResult" style="margin-top:6px">🔄 Аз нав оғоз кардан</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+// ============================================================
+// 1. БАЗАИ САВОЛҲО — 120 САВОЛ
+// Ҷавобҳо ҳамеша дар ҷои ЯКУМ (A) ҳастанд — мо онҳоро дар вақти оғоз random мекунем
+// ============================================================
+const RAW_QUESTIONS = [
+// ----- Alphabet 1-20 -----
+{q:"Кадом ҳарф баъд аз 'C' меояд?",o:["D","B","E","A"],c:0},
+{q:"Кадом ҳарф пеш аз 'M' меояд?",o:["L","N","K","O"],c:0},
+{q:"Дар алифбои англисӣ чанд ҳарф ҳаст?",o:["26","24","28","22"],c:0},
+{q:"Кадом ҳарф аввалини алифбо аст?",o:["A","B","C","Z"],c:0},
+{q:"Кадом ҳарф охирин ҳарфи алифбо аст?",o:["Z","Y","X","W"],c:0},
+{q:"Кадом ҳарф баъд аз 'T' меояд?",o:["U","S","V","R"],c:0},
+{q:"Кадом ҳарф пеш аз 'G' меояд?",o:["F","H","E","I"],c:0},
+{q:"Кадоме аз инҳо садонок аст?",o:["E","B","C","D"],c:0},
+{q:"Кадоме аз инҳо ҳамсадо аст?",o:["B","A","E","I"],c:0},
+{q:"Дар алифбои англисӣ чанд садонок ҳаст?",o:["5","6","4","7"],c:0},
+{q:"Кадом ҳарф баъд аз 'P' меояд?",o:["Q","O","R","S"],c:0},
+{q:"Кадом ҳарф пеш аз 'W' меояд?",o:["V","X","U","Y"],c:0},
+{q:"Кадоме аз инҳо садонок НЕСТ?",o:["K","A","E","O"],c:0},
+{q:"Кадом ҳарф байни 'H' ва 'J' ҷойгир аст?",o:["I","G","K","F"],c:0},
+{q:"Кадом ҳарф байни 'R' ва 'T' ҷойгир аст?",o:["S","Q","U","P"],c:0},
+{q:"Ҳарфи 5-уми алифбо кадом аст?",o:["E","D","F","C"],c:0},
+{q:"Ҳарфи 10-уми алифбо кадом аст?",o:["J","I","K","H"],c:0},
+{q:"Кадом ҳарф баъд аз 'Y' меояд?",o:["Z","X","W","A"],c:0},
+{q:"Кадом ҳарф пеш аз 'B' меояд?",o:["A","C","D","Z"],c:0},
+{q:"Дар алифбои англисӣ чанд ҳамсадо ҳаст?",o:["21","20","22","19"],c:0},
+
+// ----- Садонокҳо ва ҳамсадоҳо 21-40 -----
+{q:"Кадом калима бо садонок оғоз мешавад?",o:["Apple","Banana","Cat","Dog"],c:0},
+{q:"Кадом калима бо ҳамсадо оғоз мешавад?",o:["Ball","Egg","Ice","Orange"],c:0},
+{q:"Дар калимаи 'education' чанд садонок ҳаст?",o:["5","4","6","3"],c:0},
+{q:"Кадом ҳарф садонок аст?",o:["U","T","R","S"],c:0},
+{q:"Кадом ҳарф ҳамсадо аст?",o:["M","A","E","I"],c:0},
+{q:"Кадом калима ду садонок дорад?",o:["Book","Cat","Dog","Pen"],c:0},
+{q:"Кадом калима се садонок дорад?",o:["Beautiful","Cat","Dog","Sun"],c:0},
+{q:"Ҳарфи 'Y' баъзан ... аст",o:["Vowel","Consonant","Number","Color"],c:0},
+{q:"Кадом калима садоноки 'O' дорад?",o:["Dog","Cat","Pen","Big"],c:0},
+{q:"Кадом калима садоноки 'E' дорад?",o:["Pen","Cat","Dog","Sun"],c:0},
+{q:"Дар калимаи 'banana' чанд садонок ҳаст?",o:["3","2","4","1"],c:0},
+{q:"Кадоме садонок НЕСТ?",o:["B","A","E","I"],c:0},
+{q:"Кадоме садонок аст?",o:["O","P","Q","R"],c:0},
+{q:"Калимаи 'sky' кадом садонокро дорад?",o:["Y","A","E","O"],c:0},
+{q:"Кадом калима садонок надорад?",o:["Cry","Cat","Dog","Sun"],c:0},
+{q:"Дар калимаи 'school' чанд ҳамсадо ҳаст?",o:["4","3","5","2"],c:0},
+{q:"Кадом калима бо садонок оғоз мешавад?",o:["Umbrella","Table","Chair","Book"],c:0},
+{q:"Кадом калима бо ҳамсадо оғоз мешавад?",o:["Table","Apple","Egg","Ice"],c:0},
+{q:"Дар калимаи 'computer' чанд садонок ҳаст?",o:["3","2","4","5"],c:0},
+{q:"Кадом ҳарф ҳамеша садонок аст?",o:["A","Y","W","B"],c:0},
+
+// ----- Рақамҳо 41-60 -----
+{q:"5 + 3 чанд мешавад?",o:["Eight","Seven","Nine","Six"],c:0},
+{q:"10 - 4 чанд мешавад?",o:["Six","Five","Seven","Four"],c:0},
+{q:"2 × 6 чанд мешавад?",o:["Twelve","Ten","Fourteen","Eight"],c:0},
+{q:"15 ÷ 3 чанд мешавад?",o:["Five","Four","Six","Three"],c:0},
+{q:"Кадом рақам 'seven' аст?",o:["7","6","8","9"],c:0},
+{q:"Кадом рақам 'twelve' аст?",o:["12","11","13","10"],c:0},
+{q:"Баъд аз 19 чанд меояд?",o:["Twenty","Eighteen","Twenty-one","Seventeen"],c:0},
+{q:"Пеш аз 30 чанд меояд?",o:["Twenty-nine","Thirty-one","Twenty-eight","Thirty-two"],c:0},
+{q:"'100' бо калима чӣ гуна навишта мешавад?",o:["One hundred","Ten","Thousand","One"],c:0},
+{q:"50 + 25 чанд мешавад?",o:["Seventy-five","Seventy","Eighty","Sixty-five"],c:0},
+{q:"9 × 9 чанд мешавад?",o:["Eighty-one","Seventy-two","Ninety","Ninety-nine"],c:0},
+{q:"100 - 37 чанд мешавад?",o:["Sixty-three","Seventy-three","Sixty-seven","Fifty-three"],c:0},
+{q:"Кадом рақам 'three' аст?",o:["3","2","4","5"],c:0},
+{q:"Кадом рақам 'eighteen' аст?",o:["18","17","19","16"],c:0},
+{q:"7 + 8 чанд мешавад?",o:["Fifteen","Fourteen","Sixteen","Thirteen"],c:0},
+{q:"6 × 4 чанд мешавад?",o:["Twenty-four","Twenty","Twenty-eight","Twenty-two"],c:0},
+{q:"36 ÷ 6 чанд мешавад?",o:["Six","Five","Seven","Four"],c:0},
+{q:"Кадом рақам 'fifty' аст?",o:["50","15","5","55"],c:0},
+{q:"11 + 9 чанд мешавад?",o:["Twenty","Nineteen","Twenty-one","Eighteen"],c:0},
+{q:"3 × 7 чанд мешавад?",o:["Twenty-one","Eighteen","Twenty-four","Twenty"],c:0},
+
+// ----- Рангҳо 61-80 -----
+{q:"Осмон чӣ ранг аст?",o:["Blue","Green","Red","Yellow"],c:0},
+{q:"Алаф чӣ ранг аст?",o:["Green","Blue","Red","Brown"],c:0},
+{q:"Банан чӣ ранг аст?",o:["Yellow","Red","Blue","Green"],c:0},
+{q:"Себ чӣ ранг аст?",o:["Red","Blue","Green","Purple"],c:0},
+{q:"Барф чӣ ранг аст?",o:["White","Black","Blue","Green"],c:0},
+{q:"Ангишт чӣ ранг аст?",o:["Black","White","Red","Yellow"],c:0},
+{q:"Кадом ранг омехтаи сурх ва кабуд аст?",o:["Purple","Green","Orange","Pink"],c:0},
+{q:"Кадом ранг омехтаи сурх ва зард аст?",o:["Orange","Green","Purple","Pink"],c:0},
+{q:"Офтоб чӣ ранг аст?",o:["Yellow","Blue","Green","Purple"],c:0},
+{q:"Шоколад чӣ ранг аст?",o:["Brown","Red","Blue","Green"],c:0},
+{q:"Гул чӣ ранг аст?",o:["Red","Blue","Green","Black"],c:0},
+{q:"Шир чӣ ранг аст?",o:["White","Black","Blue","Green"],c:0},
+{q:"Уқёнус чӣ ранг аст?",o:["Blue","Red","Green","Yellow"],c:0},
+{q:"Лимон чӣ ранг аст?",o:["Yellow","Orange","Red","Purple"],c:0},
+{q:"Сабзӣ чӣ ранг аст?",o:["Orange","Blue","Green","Purple"],c:0},
+{q:"Помидор чӣ ранг аст?",o:["Red","Blue","Green","Yellow"],c:0},
+{q:"Бодинҷон чӣ ранг аст?",o:["Purple","Red","Green","Yellow"],c:0},
+{q:"Фламинго чӣ ранг аст?",o:["Pink","Blue","Green","Brown"],c:0},
+{q:"Зоғ чӣ ранг аст?",o:["Black","White","Red","Blue"],c:0},
+{q:"Офтобпараст чӣ ранг аст?",o:["Yellow","Blue","Red","Purple"],c:0},
+
+// ----- Рӯзҳо ва моҳҳо 81-100 -----
+{q:"Баъд аз Душанбе кадом рӯз меояд?",o:["Tuesday","Sunday","Wednesday","Friday"],c:0},
+{q:"Пеш аз Ҷумъа кадом рӯз меояд?",o:["Thursday","Saturday","Wednesday","Monday"],c:0},
+{q:"Дар як ҳафта чанд рӯз ҳаст?",o:["Seven","Five","Six","Eight"],c:0},
+{q:"Баъд аз Январ кадом моҳ меояд?",o:["February","March","December","April"],c:0},
+{q:"Пеш аз Декабр кадом моҳ меояд?",o:["November","January","October","September"],c:0},
+{q:"Дар як сол чанд моҳ ҳаст?",o:["Twelve","Ten","Eleven","Thirteen"],c:0},
+{q:"Аввалини моҳи сол кадом аст?",o:["January","December","February","March"],c:0},
+{q:"Охирин моҳи сол кадом аст?",o:["December","November","January","October"],c:0},
+{q:"Аввалини рӯзи ҳафта кадом аст?",o:["Monday","Sunday","Saturday","Friday"],c:0},
+{q:"Охирин рӯзи ҳафта кадом аст?",o:["Sunday","Saturday","Friday","Monday"],c:0},
+{q:"Кадом моҳ 28 ё 29 рӯз дорад?",o:["February","January","March","April"],c:0},
+{q:"Кадом моҳ 31 рӯз дорад?",o:["January","February","April","June"],c:0},
+{q:"Кадом моҳ 30 рӯз дорад?",o:["April","January","March","May"],c:0},
+{q:"Баъд аз Чоршанбе кадом рӯз меояд?",o:["Thursday","Tuesday","Friday","Saturday"],c:0},
+{q:"Пеш аз Сешанбе кадом рӯз меояд?",o:["Monday","Wednesday","Sunday","Friday"],c:0},
+{q:"Кадом моҳ тобистон аст?",o:["July","January","December","February"],c:0},
+{q:"Кадом моҳ зимистон аст?",o:["December","July","June","August"],c:0},
+{q:"Баъд аз Июн кадом моҳ меояд?",o:["July","May","August","September"],c:0},
+{q:"Пеш аз Май кадом моҳ меояд?",o:["April","June","March","July"],c:0},
+{q:"Дар як истироҳати ҳафта чанд рӯз ҳаст?",o:["Two","One","Three","Four"],c:0},
+
+// ----- Оила 101-120 -----
+{q:"Модари модари шумо кист?",o:["Grandmother","Aunt","Sister","Cousin"],c:0},
+{q:"Падари падари шумо кист?",o:["Grandfather","Uncle","Brother","Cousin"],c:0},
+{q:"Бародари модари шумо кист?",o:["Uncle","Aunt","Cousin","Nephew"],c:0},
+{q:"Хоҳари падари шумо кист?",o:["Aunt","Uncle","Cousin","Niece"],c:0},
+{q:"Фарзанди волидони шумо кист?",o:["Brother or sister","Cousin","Uncle","Aunt"],c:0},
+{q:"Писари амаки шумо кист?",o:["Cousin","Brother","Nephew","Uncle"],c:0},
+{q:"Духтари хоҳари шумо кист?",o:["Niece","Nephew","Cousin","Aunt"],c:0},
+{q:"Писари бародари шумо кист?",o:["Nephew","Niece","Cousin","Uncle"],c:0},
+{q:"Модари зани шумо кист?",o:["Mother-in-law","Sister-in-law","Aunt","Grandmother"],c:0},
+{q:"Падари шавҳари шумо кист?",o:["Father-in-law","Brother-in-law","Uncle","Grandfather"],c:0},
+{q:"Падари модари шумо кист?",o:["Grandfather","Uncle","Brother","Cousin"],c:0},
+{q:"Модари падари шумо кист?",o:["Grandmother","Aunt","Sister","Cousin"],c:0},
+{q:"Хоҳари модари шумо кист?",o:["Aunt","Uncle","Cousin","Nephew"],c:0},
+{q:"Бародари падари шумо кист?",o:["Uncle","Aunt","Cousin","Niece"],c:0},
+{q:"Духтари бародари шумо кист?",o:["Niece","Nephew","Cousin","Aunt"],c:0},
+{q:"Писари хоҳари шумо кист?",o:["Nephew","Niece","Cousin","Uncle"],c:0},
+{q:"Зани бародари шумо кист?",o:["Sister-in-law","Mother-in-law","Aunt","Grandmother"],c:0},
+{q:"Шавҳари хоҳари шумо кист?",o:["Brother-in-law","Father-in-law","Uncle","Grandfather"],c:0},
+{q:"Фарзандони шумо кистанд?",o:["Son and daughter","Cousin","Uncle","Aunt"],c:0},
+{q:"Волидони шумо кистанд?",o:["Mother and father","Uncle","Aunt","Grandfather"],c:0}
+];
+
+// ============================================================
+// 2. ФУНКСИЯИ RANDOM — ҶАВОБҲОРО ОМЕХТА МЕКУНАД
+// ============================================================
+function shuffleArray(arr){
+  const a = [...arr];
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ============================================================
+// 3. ОМОДАСОЗИИ САВОЛҲО — ҲАР ДАФЪА ҶОИ ҶАВОБИ ДУРУСТ RANDOM
+// ============================================================
+function prepareQuestions(){
+  return RAW_QUESTIONS.map((item, idx) => {
+    const correctText = item.o[item.c];           // матни ҷавоби дуруст
+    const shuffledOptions = shuffleArray(item.o); // ҳамаи вариантҳоро омехта мекунем
+    const newCorrectIndex = shuffledOptions.indexOf(correctText); // ҷои нави дуруст
+
+    return {
+      id: idx,
+      q: item.q,
+      o: shuffledOptions,
+      c: newCorrectIndex
+    };
+  });
+}
+
+// ============================================================
+// 4. ҲОЛАТИ БОЗӢ
+// ============================================================
+const STORAGE_KEY = 'englishQuizState_v4';
+
+let state = {
+  questions: [],
+  currentIndex: 0,
+  userAnswers: [],
+  correctAnswers: [],
+  finished: false
+};
+
+// ============================================================
+// 5. DOM
+// ============================================================
+const $ = id => document.getElementById(id);
+const questionCounter = $('questionCounter');
+const scoreBadge = $('scoreBadge');
+const progressFill = $('progressFill');
+const questionText = $('questionText');
+const optionsContainer = $('optionsContainer');
+const btnPrev = $('btnPrev');
+const btnFinish = $('btnFinish');
+const btnRestart = $('btnRestart');
+const quizCard = $('quizCard');
+const resultCard = $('resultCard');
+const resultPercent = $('resultPercent');
+const resultCorrect = $('resultCorrect');
+const resultWrong = $('resultWrong');
+const resultTotal = $('resultTotal');
+const resultMessage = $('resultMessage');
+const btnRestartResult = $('btnRestartResult');
+const themeToggle = $('themeToggle');
+const totalBadge = $('totalBadge');
+const messageBox = $('messageBox');
+
+// ============================================================
+// 6. НИГОҲДОШТ
+// ============================================================
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    if(!data.questions || !Array.isArray(data.questions) || data.questions.length === 0) return false;
+    state = data;
+    return true;
+  }catch(e){ return false; }
+}
+
+// ============================================================
+// 7. РЕНДЕРИНГ
+// ============================================================
+function render(){
+  if(state.finished){
+    renderResult();
+    return;
+  }
+
+  quizCard.classList.remove('hidden');
+  resultCard.classList.add('hidden');
+
+  const q = state.questions[state.currentIndex];
+  const total = state.questions.length;
+
+  questionCounter.textContent = `Саволи ${state.currentIndex + 1} аз ${total}`;
+  totalBadge.textContent = `${total} савол`;
+
+  let correctCount = 0;
+  for(let i = 0; i < total; i++){
+    if(state.correctAnswers[i]) correctCount++;
+  }
+  scoreBadge.textContent = `${correctCount} дуруст`;
+
+  const progress = ((state.currentIndex + 1) / total) * 100;
+  progressFill.style.width = progress + '%';
+
+  questionText.textContent = q.q;
+
+  messageBox.className = 'message-box';
+  messageBox.textContent = '';
+
+  const letters = ['A','B','C','D'];
+  optionsContainer.innerHTML = '';
+  const alreadyCorrect = state.correctAnswers[state.currentIndex];
+
+  q.o.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'option';
+
+    if(alreadyCorrect){
+      div.classList.add('disabled');
+      if(i === q.c) div.classList.add('correct');
+    }else{
+      if(state.userAnswers[state.currentIndex] === i){
+        div.classList.add('selected');
+      }
+    }
+    div.innerHTML = `<span class="letter">${letters[i]}</span><span>${opt}</span>`;
+    div.addEventListener('click', () => selectOption(i));
+    optionsContainer.appendChild(div);
+  });
+
+  btnPrev.disabled = state.currentIndex <= 0;
+}
+
+function selectOption(index){
+  if(state.correctAnswers[state.currentIndex]) return;
+
+  const q = state.questions[state.currentIndex];
+  state.userAnswers[state.currentIndex] = index;
+
+  if(index === q.c){
+    // ДУРУСТ
+    state.correctAnswers[state.currentIndex] = true;
+    saveState();
+    render();
+
+    messageBox.className = 'message-box success';
+    messageBox.textContent = '✅ Дуруст! Ба саволи навбатӣ гузаштем...';
+
+    setTimeout(() => {
+      if(state.currentIndex < state.questions.length - 1){
+        state.currentIndex++;
+        saveState();
+        render();
+      }else{
+        state.finished = true;
+        saveState();
+        render();
+      }
+    }, 900);
+  }else{
+    // НОДУРУСТ
+    saveState();
+    render();
+
+    messageBox.className = 'message-box error';
+    messageBox.textContent = '❌ Нодуруст! Боз кӯшиш кунед.';
+
+    const opts = optionsContainer.children;
+    if(opts[index]) opts[index].classList.add('wrong');
+  }
+}
+
+function prevQuestion(){
+  if(state.currentIndex > 0){
+    state.currentIndex--;
+    saveState();
+    render();
+  }
+}
+
+function finishQuiz(){
+  state.finished = true;
+  saveState();
+  render();
+}
+
+function restartQuiz(){
+  localStorage.removeItem(STORAGE_KEY);
+  const freshQuestions = prepareQuestions();
+  state = {
+    questions: freshQuestions,
+    currentIndex: 0,
+    userAnswers: new Array(freshQuestions.length).fill(-1),
+    correctAnswers: new Array(freshQuestions.length).fill(false),
+    finished: false
+  };
+  saveState();
+  render();
+}
+
+// ============================================================
+// 8. НАТИҶА
+// ============================================================
+function renderResult(){
+  quizCard.classList.add('hidden');
+  resultCard.classList.remove('hidden');
+
+  const total = state.questions.length;
+  let correct = 0;
+  for(let i = 0; i < total; i++){
+    if(state.correctAnswers[i]) correct++;
+  }
+  const wrong = total - correct;
+  const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+  resultPercent.textContent = percent + '%';
+  resultCorrect.textContent = correct;
+  resultWrong.textContent = wrong;
+  resultTotal.textContent = total;
+  resultMessage.textContent = `Натиҷа: ${percent}% — ${correct} дуруст аз ${total}`;
+}
+
+// ============================================================
+// 9. ТЕМА
+// ============================================================
+function applyTheme(theme){
+  if(theme === 'dark'){
+    document.body.classList.add('dark');
+    themeToggle.textContent = '☀️ Light';
+  }else{
+    document.body.classList.remove('dark');
+    themeToggle.textContent = '🌙 Dark';
+  }
+  localStorage.setItem('quizTheme', theme);
+}
+
+themeToggle.addEventListener('click', () => {
+  const isDark = document.body.classList.contains('dark');
+  applyTheme(isDark ? 'light' : 'dark');
+});
+
+// ============================================================
+// 10. КЛАВИАТУРА
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  if(state.finished) return;
+  if(state.correctAnswers[state.currentIndex]) return;
+  const key = e.key.toUpperCase();
+  const map = {'A':0,'B':1,'C':2,'D':3};
+  if(key in map) selectOption(map[key]);
+});
+
+// ============================================================
+// 11. ТУГМАҲО
+// ============================================================
+btnPrev.addEventListener('click', prevQuestion);
+btnFinish.addEventListener('click', finishQuiz);
+btnRestart.addEventListener('click', restartQuiz);
+btnRestartResult.addEventListener('click', restartQuiz);
+
+// ============================================================
+// 12. ОҒОЗ
+// ============================================================
+function init(){
+  const savedTheme = localStorage.getItem('quizTheme') || 'light';
+  applyTheme(savedTheme);
+
+  if(loadState()){
+    if(!state.userAnswers || state.userAnswers.length !== state.questions.length){
+      restartQuiz();
+    }else{
+      render();
+    }
+  }else{
+    restartQuiz();
+  }
+}
+
+init();
+
+})();
+</script>
+</body>
+</html>
